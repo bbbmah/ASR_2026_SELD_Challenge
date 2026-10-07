@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pt
+*.pth
+*.zip
+*.npz
+*.mp4
+*.wav
+*.pkl
+private/
+manifest*.csv

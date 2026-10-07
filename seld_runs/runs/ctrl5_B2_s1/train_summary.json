@@ -1,0 +1,7 @@
+{
+ "run": "ctrl5_B2_s1",
+ "best_epoch": 194,
+ "best_value": 0.14537188050346356,
+ "select_metric": "F_ext",
+ "epochs_done": 200
+}

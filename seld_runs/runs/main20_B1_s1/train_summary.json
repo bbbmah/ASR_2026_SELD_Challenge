@@ -1,0 +1,7 @@
+{
+ "run": "main20_B1_s1",
+ "best_epoch": 174,
+ "best_value": 0.10918953766177526,
+ "select_metric": "F_ext",
+ "epochs_done": 200
+}
