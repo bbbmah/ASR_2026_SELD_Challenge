@@ -1,0 +1,97 @@
+drive_root: /content/drive/MyDrive/Colab Notebooks/ASR_2026-2/for_dataset
+out_root: /content/drive/MyDrive/Colab Notebooks/ASR_2026-2/for_dataset/seld_runs
+data_root: /content/data
+local_tmp: /content/tmp
+public_zip_dir: /content/drive/MyDrive/Colab Notebooks/ASR_2026-2/for_dataset/dataset/main20
+internal_zip_dir: /content/drive/MyDrive/Colab Notebooks/ASR_2026-2/for_dataset/internal
+dataset: main20
+eval_dataset: main20
+preset: B3
+modality: audio_visual
+video_input: real
+video_crop: full
+av_time_window: 2
+seed: 1
+epochs: 200
+lr: 0.001
+batch_size: auto
+num_workers: 2
+select_metric: F_ext
+exclude_absent_classes: true
+resume: true
+updates: null
+audio_dtype: float32
+generated_dir: /content/drive/MyDrive/Colab Notebooks/ASR_2026-2/for_dataset/generated
+train_stages:
+- 0
+- 1
+train_family: []
+train_mirror: null
+train_fraction: 1.0
+eval_video: real
+exclude_list: null
+data_tag: S01
+std_name: main20_B3_s1_S01
+run_name: main20_B3_s1_S01
+label_len: 200
+eval_label_len: 200
+batch_size_train: 64
+batch_size_eval: 64
+run_dir: /content/drive/MyDrive/Colab Notebooks/ASR_2026-2/for_dataset/seld_runs/runs/main20_B3_s1_S01
+feat_root: /content/drive/MyDrive/Colab Notebooks/ASR_2026-2/for_dataset/seld_runs/features
+results_dir: /content/drive/MyDrive/Colab Notebooks/ASR_2026-2/for_dataset/seld_runs/results
+params:
+  modality: audio_visual
+  net_type: SELDnet
+  video_input: real
+  video_crop: full
+  av_time_window: 2
+  sampling_rate: 24000
+  hop_length_s: 0.02
+  nb_mels: 64
+  fps: 10
+  resnet_feature_size: 98
+  nb_conv_blocks: 3
+  nb_conv_filters: 64
+  f_pool_size:
+  - 4
+  - 4
+  - 2
+  t_pool_size:
+  - 5
+  - 1
+  - 1
+  dropout: 0.05
+  rnn_size: 128
+  nb_rnn_layers: 2
+  nb_self_attn_layers: 2
+  nb_attn_heads: 8
+  nb_transformer_layers: 2
+  nb_fnn_layers: 1
+  fnn_size: 128
+  max_polyphony: 3
+  nb_classes: 13
+  label_sequence_length: 200
+  multiACCDOA: true
+  thresh_unify: 15
+  nb_epochs: 200
+  batch_size: 64
+  nb_workers: 2
+  shuffle: true
+  learning_rate: 0.001
+  weight_decay: 0
+  average: macro
+  lad_doa_thresh: 20
+  lad_dist_thresh: inf
+  lad_reldist_thresh: 1.0
+  lad_req_onscreen: false
+  exclude_absent_classes: true
+  audio_dtype: float32
+effective:
+  train_clips: 8911
+  stage_counts:
+    '0': 2999
+    '1': 5912
+  steps_per_epoch: 139
+  epochs: 200
+  total_updates: 27800

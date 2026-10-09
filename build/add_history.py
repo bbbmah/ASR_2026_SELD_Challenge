@@ -40,6 +40,10 @@ HIST = {
     "RESULTS_REPORT.md": [
         ("2026-10-06", "최초 생성: main20, ctrl5 x B1, B2, B2-0, B3 학습 결과 보고(점수, 격차, 창 단위 부트스트랩 구간, 클래스별, 한계)"),
         ("2026-10-06", "10절 추가: DCASE 2025 점수와의 관계, onscreen을 요구한 F 재채점. ctrl5 B2 F_ext 표 값 정정(9.17 -> 9.20)"),
+        ("2026-10-09", "11절 추가: S0 대 S0+S1(27,800회, 9,200회 bs128) 비교. main20 4종과 ctrl5 B3의 val, test 점수, 영상 효과, 한계"),
+    ],
+    "build/s1_compare.py": [
+        ("2026-10-09", "최초 생성: S0, S0+S1, S0+S1 9200 결과를 모아 seld_runs/results/s1_comparison.csv 로 저장"),
     ],
     "DATA_PLAN_v2.md": [
         ("2026-10-06", "최초 생성: 데이터 확장(시간 창, 카메라 변형, 좌우 거울)과 학습 시 증강 플랜"),
@@ -72,6 +76,7 @@ HIST = {
     ],
     "seld_runs/results/RESULTS_REPORT.md": [
         ("2026-10-06", "상위 폴더 RESULTS_REPORT.md의 사본을 결과 폴더에 둠. 본문 변경 이력은 원본과 같다(최초 생성, 10절 추가, 표 값 정정)"),
+        ("2026-10-09", "상위 RESULTS_REPORT.md의 11절(S0 대 S0+S1 비교) 반영한 사본으로 교체"),
     ],
     # ------------------------------------------------------------------ build/ 문서
     "build/NOTES.md": [
@@ -255,6 +260,7 @@ HIST = {
     "baseline/seld_challenge/colab_run.ipynb": [
         ("2026-10-03", "최초 생성: 학습 노트북(prepare, features, train, eval, swaptest, predict, summary)"),
         ("2026-10-07", "추가 학습 데이터(S1)용으로 다시 만듦: 설정 칸 6개(train_stages, updates 등), datainfo 셀, data_gaps 출력, 추천 실험 순서. 이전 노트북은 build/colab_run_before_S1.ipynb"),
+        ("2026-10-09", "사용자가 구분용으로 colab_run_new.ipynb로 바꿨다가, 이전 노트북이 build/colab_run_before_S1.ipynb로 옮겨져 구분이 필요 없어져 colab_run.ipynb로 되돌림(내용은 그대로)"),
     ],
     "build/colab_run_before_S1.ipynb": [
         ("2026-10-03", "colab_run.ipynb로 최초 생성(S0 전용 학습 노트북)"),
@@ -271,7 +277,9 @@ COMMENT_KINDS = {".py": "#", ".ps1": "#", ".sh": "#", ".yaml": "#", ".yml": "#",
 
 
 def entries_for(rel):
-    return HIST[rel] + [LAST]
+    h = HIST[rel]
+    # 일괄 주석 줄은 이력 주석을 처음 붙인 날(TODAY)까지 만든 파일에만 붙인다. 그 뒤에 만들거나 고친 파일은 자기 이력 줄이 있다.
+    return h if any(d > TODAY for d, _ in h) else h + [LAST]
 
 
 def lines_for(rel):

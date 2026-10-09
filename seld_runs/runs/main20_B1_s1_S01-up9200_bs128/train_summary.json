@@ -1,0 +1,14 @@
+{
+ "run": "main20_B1_s1_S01-up9200_bs128",
+ "best_epoch": 113,
+ "best_value": 0.10057101399751316,
+ "select_metric": "F_ext",
+ "epochs_done": 134,
+ "steps_per_epoch": 69,
+ "total_updates": 9246,
+ "train_clips": 8911,
+ "stage_counts": {
+  "0": 2999,
+  "1": 5912
+ }
+}
