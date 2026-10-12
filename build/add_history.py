@@ -45,6 +45,49 @@ HIST = {
     "build/s1_compare.py": [
         ("2026-10-09", "최초 생성: S0, S0+S1, S0+S1 9200 결과를 모아 seld_runs/results/s1_comparison.csv 로 저장"),
     ],
+    "baseline/ntu_challenge/parameters.py": [
+        ("2026-10-13", "최초 생성: NTU 원본 parameters.py에서 가져와 정리(경로, 데이터셋, 라벨 길이 auto, accum_batch auto, 선택 기준, 특징과 증강 옵션 기본값). 사용하지 않는 fold, wandb, finetune 항목 제거"),
+    ],
+    "baseline/ntu_challenge/main.py": [
+        ("2026-10-13", "최초 생성: NTU 원본 main.py를 우리 데이터셋(main20, ctrl5) 학습용으로 다시 씀(zip 풀기, 특징, 학습, 매 에폭 val 채점으로 최고 모델 저장). wandb, torchinfo 제거"),
+    ],
+    "baseline/ntu_challenge/extract_features.py": [
+        ("2026-10-13", "최초 생성: NTU 원본을 우리 폴더 구조에 맞게 다시 씀(묶음 파일 캐시, train 에서만 정규화 통계, train_NNNNN 만 사용)"),
+    ],
+    "baseline/ntu_challenge/data_generator.py": [
+        ("2026-10-13", "최초 생성: NTU 원본을 묶음 파일 읽기와 train 통계 정규화로 다시 씀(finetune 제거)"),
+    ],
+    "baseline/ntu_challenge/utils.py": [
+        ("2026-10-13", "NTU 원본에서 복사 후 수정: 출력 x 클램프를 (-1,1)로(접지 않은 방위각), onscreen 0.5 기준, setup() 제거, 예측 파일 이름을 클립 이름으로 받음"),
+    ],
+    "baseline/ntu_challenge/model.py": [
+        ("2026-10-13", "NTU 원본에서 복사(수정 없음)"),
+    ],
+    "baseline/ntu_challenge/loss.py": [
+        ("2026-10-13", "NTU 원본에서 복사(수정 없음)"),
+    ],
+    "baseline/ntu_challenge/training_utils.py": [
+        ("2026-10-13", "NTU 원본에서 복사(수정 없음, 증강)"),
+    ],
+    "baseline/ntu_challenge/metrics.py": [
+        ("2026-10-13", "baseline/seld_challenge/metrics.py에서 복사(수정 없음)"),
+    ],
+    "baseline/ntu_challenge/score.py": [
+        ("2026-10-13", "baseline/seld_challenge/score.py에서 복사(수정 없음)"),
+    ],
+    "baseline/ntu_challenge/seld_label_utils.py": [
+        ("2026-10-13", "baseline/seld_challenge/seld_label_utils.py에서 복사(수정 없음)"),
+    ],
+    "baseline/ntu_challenge/README_ntu.md": [
+        ("2026-10-13", "최초 생성: NTU 시스템을 챌린지 데이터셋으로 학습하는 방법, 원본에서 바꾼 곳, 확인한 것과 못 한 것"),
+        ("2026-10-13", "코랩 학습 노트북(colab_ntu.ipynb) 사용법 추가"),
+    ],
+    "baseline/ntu_challenge/colab_ntu.ipynb": [
+        ("2026-10-13", "최초 생성: NTU 시스템 학습 노트북(설정 칸, 학습 한 셀, 결과 보기). 이어 하기와 test 예측은 없음"),
+    ],
+    "build/make_ntu_notebook.py": [
+        ("2026-10-13", "최초 생성: baseline/ntu_challenge/colab_ntu.ipynb를 만드는 스크립트"),
+    ],
     "DATA_PLAN_v2.md": [
         ("2026-10-06", "최초 생성: 데이터 확장(시간 창, 카메라 변형, 좌우 거울)과 학습 시 증강 플랜"),
         ("2026-10-07", "저장 제약 정정: 드라이브는 5TB이고 G: 여유는 스트리밍 캐시 값. 로컬은 생성 버퍼로 쓰는 방식으로 변경, 로컬 정리의 영향 추가"),
@@ -185,10 +228,12 @@ HIST = {
     ],
     "UPSTREAM.md": [
         ("2026-10-07", "최초 생성: 사용한 남의 코드(DCASE2025 베이스라인, Sony 데이터 생성기)의 주소와 커밋"),
+        ("2026-10-13", "NTU 저장소(itsjunwei/NTU_SNTL_Task3) 주소와 커밋 추가"),
     ],
     "build/publish_sync.py": [
         ("2026-10-07", "최초 생성: 공개 저장소에 올릴 파일을 허용 목록으로 골라 스테이징 폴더에 복사(시드 값 가리기, 노트북 실행 결과 지우기, 비공개 정보 검사)"),
         ("2026-10-07", "자기 자신은 토큰 검사에서 제외(검사 문자열 오탐 방지)"),
+        ("2026-10-13", "허용 목록에 baseline/ntu_challenge 추가"),
     ],
     "build/add_history.py": [
         ("2026-10-07", "최초 생성: 파일마다 변경 이력 주석을 넣는 스크립트(이력 데이터 HIST가 이 파일에 있음)"),

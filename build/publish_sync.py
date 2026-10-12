@@ -1,7 +1,7 @@
 # [변경 이력 시작]
 #   2026-10-07  최초 생성: 공개 저장소에 올릴 파일을 허용 목록으로 골라 스테이징 폴더에 복사(시드 값 가리기, 노트북 실행 결과 지우기, 비공개 정보 검사)
 #   2026-10-07  자기 자신은 토큰 검사에서 제외(검사 문자열 오탐 방지)
-#   2026-10-07  변경 이력 주석 추가
+#   2026-10-13  허용 목록에 baseline/ntu_challenge 추가
 # [변경 이력 끝]
 """
 공개 저장소에 올릴 파일을 골라 정리해서 스테이징 폴더(= git 작업 폴더)에 복사한다. 올리지는 않는다(커밋과 푸시는 따로).
@@ -26,6 +26,7 @@ DRY = "--dry" in sys.argv
 INCLUDE = ["*.md", "*.ipynb",
            "build/*.py", "build/*.md", "build/*.ps1", "build/*.sh", "build/*.yaml", "build/*.yml", "build/*.ipynb", "build/*.txt",
            "baseline/seld_challenge/*.py", "baseline/seld_challenge/*.md", "baseline/seld_challenge/*.ipynb", "baseline/seld_challenge/configs/*",
+           "baseline/ntu_challenge/*.py", "baseline/ntu_challenge/*.md", "baseline/ntu_challenge/*.ipynb", "baseline/ntu_challenge/requirements.txt", "baseline/ntu_challenge/LICENSE",
            "dataset/*.md",
            "seld_runs/results/*.csv", "seld_runs/results/*.json", "seld_runs/results/*.md",
            "seld_runs/runs/*/train_log.csv", "seld_runs/runs/*/scores_*.json", "seld_runs/runs/*/train_summary.json", "seld_runs/runs/*/config_used.yaml"]
