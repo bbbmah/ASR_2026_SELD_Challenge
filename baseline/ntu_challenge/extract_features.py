@@ -1,5 +1,6 @@
 # [변경 이력 시작]
 #   2026-10-13  최초 생성: NTU 원본을 우리 폴더 구조에 맞게 다시 씀(묶음 파일 캐시, train 에서만 정규화 통계, train_NNNNN 만 사용)
+#   2026-10-13  test 용으로 extract(labels=False) 추가(정답 없는 split)
 # [변경 이력 끝]
 """
 extract_features.py
@@ -147,8 +148,10 @@ class SELDFeatureExtractor():
         os.replace(path + '.tmp.npz', path)
 
     # ------------------------------------------------------------------ 한꺼번에
-    def extract(self, splits=('train', 'val')):
+    def extract(self, splits=('train', 'val'), labels=True):
+        """labels=False 는 test(정답 없음)용: 오디오 특징만 뽑는다. 정규화 통계는 train 것이 있어야 한다."""
         for sp in splits:
             self.extract_audio_features(sp)
-            self.extract_labels(sp)
+            if labels:
+                self.extract_labels(sp)
         self.fit_stats()

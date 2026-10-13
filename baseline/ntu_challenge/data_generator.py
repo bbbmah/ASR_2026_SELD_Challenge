@@ -1,5 +1,6 @@
 # [변경 이력 시작]
 #   2026-10-13  최초 생성: NTU 원본을 묶음 파일 읽기와 train 통계 정규화로 다시 씀(finetune 제거)
+#   2026-10-13  with_labels=False 추가(test 는 입력만)
 # [변경 이력 끝]
 """
 data_generator.py
@@ -22,17 +23,19 @@ from torch.utils.data.dataset import Dataset
 
 
 class DataGenerator(Dataset):
-    def __init__(self, params, split, transform=None):
+    def __init__(self, params, split, transform=None, with_labels=True):
         """
         Args:
             params (dict): parameters.py 의 값 (feat_dir 가 채워져 있어야 한다).
-            split (str): 'train' | 'val'
+            split (str): 'train' | 'val' | 'test'
+            with_labels (bool): False 이면 입력만 돌려준다(test 는 정답이 없다).
             transform: 학습 때 특징에 적용할 증강(training_utils). 없으면 None.
         """
         super().__init__()
         self.params = params
         self.split = split
         self.transform = transform
+        self.with_labels = with_labels
         feat_dir = params['feat_dir']
 
         st = np.load(os.path.join(feat_dir, 'stats_train.npz'))
@@ -40,16 +43,18 @@ class DataGenerator(Dataset):
         std = torch.from_numpy(st['std'])[None, :, None, :]
 
         a_files = sorted(glob.glob(os.path.join(feat_dir, 'audio', f'{split}_*.pt')))
-        l_files = sorted(glob.glob(os.path.join(feat_dir, 'labels_adpit', f'{split}_*.pt')))
+        l_files = sorted(glob.glob(os.path.join(feat_dir, 'labels_adpit', f'{split}_*.pt'))) if with_labels else a_files
         if not a_files or len(a_files) != len(l_files):
             raise FileNotFoundError(f"{split} 특징이 없거나 오디오({len(a_files)})와 라벨({len(l_files)}) 묶음 수가 다릅니다: {feat_dir}")
         self.names, self.audio, self.labels, self.offsets = [], [], [], [0]
         for fa, fl in zip(a_files, l_files):
-            da, dl = torch.load(fa), torch.load(fl)
-            assert da['names'] == dl['names'], f'오디오와 라벨의 클립 목록이 다릅니다: {fa}'
+            da = torch.load(fa)
+            if with_labels:
+                dl = torch.load(fl)
+                assert da['names'] == dl['names'], f'오디오와 라벨의 클립 목록이 다릅니다: {fa}'
+                self.labels.append(dl['data'])
             self.names += da['names']
             self.audio.append((da['data'] - mean) / std)
-            self.labels.append(dl['data'])
             self.offsets.append(self.offsets[-1] + len(da['names']))
 
     def __getitem__(self, item):
@@ -57,6 +62,8 @@ class DataGenerator(Dataset):
         k = bisect.bisect_right(self.offsets, int(item)) - 1
         j = int(item) - self.offsets[k]
         audio_features = self.audio[k][j]
+        if not self.with_labels:
+            return audio_features
         labels = self.labels[k][j]
         if not self.params['multiACCDOA']:
             mask = labels[:, :self.params['nb_classes']]

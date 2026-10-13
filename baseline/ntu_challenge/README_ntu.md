@@ -1,6 +1,7 @@
 <!-- [변경 이력 시작]
   2026-10-13  최초 생성: NTU 시스템을 챌린지 데이터셋으로 학습하는 방법, 원본에서 바꾼 곳, 확인한 것과 못 한 것
   2026-10-13  코랩 학습 노트북(colab_ntu.ipynb) 사용법 추가
+  2026-10-13  - -stage predict 설명 추가
 [변경 이력 끝] -->
 
 # NTU 시스템을 챌린지 데이터셋으로 학습하는 버전 (`ntu_challenge`)
@@ -8,8 +9,8 @@
 DCASE 2025 Task 3 참가팀 NTU(Yeow, Tan, Peksi, Gan)의 소리만 쓰는 시스템 [itsjunwei/NTU_SNTL_Task3](https://github.com/itsjunwei/NTU_SNTL_Task3) (커밋 `0e4f207`, MIT 라이선스)을
 우리 챌린지 데이터셋(`main20`, `ctrl5`)으로 **학습만** 돌릴 수 있게 고친 것입니다. 원본 클론(`baseline/NTU_SNTL_Task3/`)은 고치지 않았고, 이 폴더에 필요한 파일을 복사해 고쳤습니다.
 
-**하는 일**: zip 풀기(선택) → 특징 뽑기 → 학습 → 매 에폭 val 채점으로 최고 모델 저장.
-**하지 않는 일**: test 예측과 제출 파일 만들기, 이어 하기(resume), 추가 생성 데이터(S1) 학습, 영상 사용(NTU 시스템은 소리만 씁니다), 새 기능 추가.
+**하는 일**: zip 풀기(선택) → 특징 뽑기 → 학습 → 매 에폭 val 채점으로 최고 모델 저장(`--stage train`, 기본). 학습 뒤에 `--stage predict`로 최고 모델이 test를 예측해 `pred_test/`와 제출용 zip을 만듭니다(채점은 하지 않음, test 정답은 비공개).
+**하지 않는 일**: 이어 하기(resume), 추가 생성 데이터(S1) 학습, 영상 사용(NTU 시스템은 소리만 씁니다), 새 기능 추가.
 
 ## 쓰는 법
 
@@ -33,8 +34,9 @@ python main.py --dataset ctrl5  --data_root /content/data --out_root ... --zip_d
 | `--ms --gamma --iv --ipd --slite`, `--cutout --itfm --freqshift --filtaug --compfreq --alltrans` | NTU 원본의 특징, 증강 옵션. 기본은 모두 꺼짐(왼쪽, 오른쪽 로그멜 2채널) |
 | `--local_tmp` | 에폭마다 쓰는 val 예측 csv 위치(로컬 디스크). 기본은 시스템 임시 폴더 |
 | `--exp` | 실행 이름 꼬리표 |
+| `--stage` | `train`(기본) 또는 `predict`. `predict`는 같은 `--dataset --seed --exp`로 학습한 모델을 찾아 test를 예측한다. `--zip_dir`을 주면 test zip(`test_inputs.zip` / `internal_ctrl5_test.zip`)을 풀고, 특징 옵션(`--ms` 등)은 학습 때 값을 모델 파일에서 가져온다 |
 
-결과: `{out_root}/runs/ntu_{dataset}_s{seed}[_exp]/` 에 `best_model.pth`, `train_log.csv`(에폭별 손실과 val 점수), `train_summary.json`, `config_used.json`.
+결과: `{out_root}/runs/ntu_{dataset}_s{seed}[_exp]/` 에 `best_model.pth`, `train_log.csv`(에폭별 손실과 val 점수), `train_summary.json`, `config_used.json`. `predict` 뒤에는 `pred_test/*.csv`와 `submission_ntu_....zip`(예측 csv만)이 더해집니다.
 특징 캐시: `{out_root}/features/{dataset}/ntu_{mel64_..._dnorm}/` (500클립씩 묶음 파일 + `stats_train.npz`). 이미 있으면 다시 만들지 않습니다.
 
 학습 방식은 원본 그대로입니다: AdamW(가중치 감쇠 1e-4, bias/BN/LN 제외), OneCycleLR, 기울기 누적, 100에폭, 멀티 ACCDOA(트랙 3개), ADPIT 손실, 거리 정규화(dnorm).
@@ -71,6 +73,7 @@ python main.py --dataset ctrl5  --data_root /content/data --out_root ... --zip_d
 
 - main20(200프레임)과 ctrl5(50프레임)가 끝까지 돈다. zip 풀기, 특징 뽑기, 학습, val 채점, 최고 모델 저장까지.
 - `--ms --iv --gamma --itfm`(6채널 특징과 증강)도 돈다.
+- `--stage predict`가 ctrl5 test를 예측해 csv와 zip을 만든다(특징 옵션은 모델 파일에서 가져옴). 예측 csv 형식은 정답과 같다(`frame,class,source,azimuth,distance,onscreen`).
 - 정답 라벨을 모델 출력 모양으로 바꿔서 예측 파일로 쓰고 정답과 채점하면 F=0.969, 각도 오차 0.06°. 뒤쪽 소리(|방위각|>90°)는 정답 73.2%, 복원 73.4%로 보존된다. 1번 수정이 없으면 뒤쪽 소리가 모두 사라진다.
 
 ## 확인하지 못한 것

@@ -41,6 +41,7 @@ HIST = {
         ("2026-10-06", "최초 생성: main20, ctrl5 x B1, B2, B2-0, B3 학습 결과 보고(점수, 격차, 창 단위 부트스트랩 구간, 클래스별, 한계)"),
         ("2026-10-06", "10절 추가: DCASE 2025 점수와의 관계, onscreen을 요구한 F 재채점. ctrl5 B2 F_ext 표 값 정정(9.17 -> 9.20)"),
         ("2026-10-09", "11절 추가: S0 대 S0+S1(27,800회, 9,200회 bs128) 비교. main20 4종과 ctrl5 B3의 val, test 점수, 영상 효과, 한계"),
+        ("2026-10-13", "12절 추가: NTU 시스템(소리만) main20 학습 결과, val과 test 비교, 한계"),
     ],
     "build/s1_compare.py": [
         ("2026-10-09", "최초 생성: S0, S0+S1, S0+S1 9200 결과를 모아 seld_runs/results/s1_comparison.csv 로 저장"),
@@ -50,12 +51,15 @@ HIST = {
     ],
     "baseline/ntu_challenge/main.py": [
         ("2026-10-13", "최초 생성: NTU 원본 main.py를 우리 데이터셋(main20, ctrl5) 학습용으로 다시 씀(zip 풀기, 특징, 학습, 매 에폭 val 채점으로 최고 모델 저장). wandb, torchinfo 제거"),
+        ("2026-10-13", "--stage predict 추가: 저장된 최고 모델로 test 예측과 제출용 zip 만들기(채점 없음), 특징 옵션은 모델 파일에서 가져옴"),
     ],
     "baseline/ntu_challenge/extract_features.py": [
         ("2026-10-13", "최초 생성: NTU 원본을 우리 폴더 구조에 맞게 다시 씀(묶음 파일 캐시, train 에서만 정규화 통계, train_NNNNN 만 사용)"),
+        ("2026-10-13", "test 용으로 extract(labels=False) 추가(정답 없는 split)"),
     ],
     "baseline/ntu_challenge/data_generator.py": [
         ("2026-10-13", "최초 생성: NTU 원본을 묶음 파일 읽기와 train 통계 정규화로 다시 씀(finetune 제거)"),
+        ("2026-10-13", "with_labels=False 추가(test 는 입력만)"),
     ],
     "baseline/ntu_challenge/utils.py": [
         ("2026-10-13", "NTU 원본에서 복사 후 수정: 출력 x 클램프를 (-1,1)로(접지 않은 방위각), onscreen 0.5 기준, setup() 제거, 예측 파일 이름을 클립 이름으로 받음"),
@@ -81,12 +85,15 @@ HIST = {
     "baseline/ntu_challenge/README_ntu.md": [
         ("2026-10-13", "최초 생성: NTU 시스템을 챌린지 데이터셋으로 학습하는 방법, 원본에서 바꾼 곳, 확인한 것과 못 한 것"),
         ("2026-10-13", "코랩 학습 노트북(colab_ntu.ipynb) 사용법 추가"),
+        ("2026-10-13", "--stage predict 설명 추가"),
     ],
     "baseline/ntu_challenge/colab_ntu.ipynb": [
         ("2026-10-13", "최초 생성: NTU 시스템 학습 노트북(설정 칸, 학습 한 셀, 결과 보기). 이어 하기와 test 예측은 없음"),
+        ("2026-10-13", "5번 셀 추가: test 예측과 제출용 zip"),
     ],
     "build/make_ntu_notebook.py": [
         ("2026-10-13", "최초 생성: baseline/ntu_challenge/colab_ntu.ipynb를 만드는 스크립트"),
+        ("2026-10-13", "test 예측 셀 추가"),
     ],
     "DATA_PLAN_v2.md": [
         ("2026-10-06", "최초 생성: 데이터 확장(시간 창, 카메라 변형, 좌우 거울)과 학습 시 증강 플랜"),
@@ -120,6 +127,7 @@ HIST = {
     "seld_runs/results/RESULTS_REPORT.md": [
         ("2026-10-06", "상위 폴더 RESULTS_REPORT.md의 사본을 결과 폴더에 둠. 본문 변경 이력은 원본과 같다(최초 생성, 10절 추가, 표 값 정정)"),
         ("2026-10-09", "상위 RESULTS_REPORT.md의 11절(S0 대 S0+S1 비교) 반영한 사본으로 교체"),
+        ("2026-10-13", "상위 RESULTS_REPORT.md의 12절(NTU 결과) 반영한 사본으로 교체"),
     ],
     # ------------------------------------------------------------------ build/ 문서
     "build/NOTES.md": [
@@ -234,6 +242,7 @@ HIST = {
         ("2026-10-07", "최초 생성: 공개 저장소에 올릴 파일을 허용 목록으로 골라 스테이징 폴더에 복사(시드 값 가리기, 노트북 실행 결과 지우기, 비공개 정보 검사)"),
         ("2026-10-07", "자기 자신은 토큰 검사에서 제외(검사 문자열 오탐 방지)"),
         ("2026-10-13", "허용 목록에 baseline/ntu_challenge 추가"),
+        ("2026-10-13", "허용 목록에 NTU 실행 설정(ntu_*/config_used.json) 추가"),
     ],
     "build/add_history.py": [
         ("2026-10-07", "최초 생성: 파일마다 변경 이력 주석을 넣는 스크립트(이력 데이터 HIST가 이 파일에 있음)"),

@@ -1,11 +1,13 @@
 # [변경 이력 시작]
 #   2026-10-13  최초 생성: NTU 원본 main.py를 우리 데이터셋(main20, ctrl5) 학습용으로 다시 씀(zip 풀기, 특징, 학습, 매 에폭 val 채점으로 최고 모델 저장). wandb, torchinfo 제거
+#   2026-10-13  --stage predict 추가: 저장된 최고 모델로 test 예측과 제출용 zip 만들기(채점 없음), 특징 옵션은 모델 파일에서 가져옴
 # [변경 이력 끝]
 """
 main.py
 
 NTU 저장소(itsjunwei/NTU_SNTL_Task3)의 main.py 를 우리 챌린지 데이터셋(main20, ctrl5)으로 학습하도록 다시 쓴 진입점이다.
-하는 일: (1) zip 풀기(선택) (2) 특징 뽑기 (3) 학습 (4) 매 에폭 val 채점으로 최고 모델 저장.  test 예측과 채점은 하지 않는다.
+하는 일: --stage train (기본): (1) zip 풀기(선택) (2) 특징 뽑기 (3) 학습 (4) 매 에폭 val 채점으로 최고 모델 저장.
+         --stage predict: 저장된 최고 모델로 test 를 예측하고 제출용 zip 을 만든다(채점은 하지 않는다. test 정답은 비공개).
 
 예) python main.py --dataset main20 --data_root /content/data --out_root /content/drive/MyDrive/.../seld_runs \
                    --zip_dir /content/drive/MyDrive/.../dataset/main20
@@ -48,7 +50,7 @@ def log(*a):
 
 # ---------------------------------------------------------------------- zip 풀기
 def zip_path(zip_dir, dataset, split):
-    name = f'{split}.zip' if dataset == 'main20' else f'internal_{dataset}_{split}.zip'
+    name = {'train': 'train.zip', 'val': 'val.zip', 'test': 'test_inputs.zip'}[split] if dataset == 'main20' else f'internal_{dataset}_{split}.zip'
     return os.path.join(zip_dir, name)
 
 
@@ -150,6 +152,45 @@ def metric_value(res):
     return float('-inf') if v is None else v
 
 
+# ---------------------------------------------------------------------- predict (test 예측)
+def predict(args, run_name, run_dir):
+    """저장된 최고 모델(best_model.pth)로 test 를 예측해 pred_test/ 와 제출용 zip 을 만든다. 채점은 하지 않는다(test 정답은 비공개).
+    특징 옵션(ms, gamma, iv 등)은 학습 때 값을 체크포인트에서 가져온다."""
+    ck_path = os.path.join(run_dir, 'best_model.pth')
+    if not os.path.exists(ck_path):
+        raise FileNotFoundError(f'학습된 모델이 없습니다: {ck_path}  (같은 dataset, seed, exp 로 먼저 학습하세요)')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    ck = torch.load(ck_path, map_location=device, weights_only=False)
+    for k in ('ms', 'gamma', 'iv', 'ipd', 'slite', 'nb_mels', 'max_freq', 'dnorm', 'multiACCDOA'):
+        params[k] = ck['params'][k]
+    ds_name = params['dataset']
+    params['feat_dir'] = os.path.join(params['out_root'], 'features', ds_name, 'ntu_' + feat_tag())
+    log(f'== test 예측: {run_name}  (최고 에폭 {ck["epoch"] + 1}, device={device})')
+    if args.zip_dir:
+        ensure_split(args.zip_dir, params['data_root'], ds_name, 'test')
+    SELDFeatureExtractor(params).extract(('test',), labels=False)
+    ds = DataGenerator(params, 'test', with_labels=False)
+    model = SELDModel(params=params, in_feat_shape=(int(params['batch_size']),) + tuple(ds[0].shape)).to(device)
+    model.load_state_dict(ck['seld_model'])
+    model.eval()
+    out = os.path.join(run_dir, 'pred_test')
+    if os.path.isdir(out):
+        shutil.rmtree(out)
+    os.makedirs(out)
+    loader = DataLoader(ds, batch_size=params['val_batch_size'], shuffle=False, num_workers=0)
+    start = 0
+    with torch.no_grad():
+        for x in loader:
+            logits = model(x.to(device))
+            utils.write_logits_to_dcase_format(logits, params, out, ds.names[start:start + logits.size(0)])
+            start += logits.size(0)
+    zpath = os.path.join(run_dir, f'submission_{run_name}.zip')
+    with zipfile.ZipFile(zpath, 'w', zipfile.ZIP_DEFLATED) as z:
+        for f in sorted(os.listdir(out)):
+            z.write(os.path.join(out, f), f)
+    log(f'test 예측 {len(ds)}개 -> {out}\n제출용 zip: {zpath}')
+
+
 # ---------------------------------------------------------------------- main
 def main(args):
     for k, v in vars(args).items():
@@ -164,6 +205,8 @@ def main(args):
     run_dir = os.path.join(params['out_root'], 'runs', run_name)
     params['feat_dir'] = os.path.join(params['out_root'], 'features', ds_name, 'ntu_' + feat_tag())
     os.makedirs(run_dir, exist_ok=True)
+    if args.stage == 'predict':
+        return predict(args, run_name, run_dir)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     set_seed(params['seed'])
 
@@ -247,6 +290,7 @@ if __name__ == '__main__':
     ap.add_argument('--dataset', choices=list(LABEL_LEN), default='main20')
     ap.add_argument('--data_root', required=True, help='{data_root}/{dataset}/{train,val}/{audio,labels}/ 가 있는(또는 zip 을 풀) 곳')
     ap.add_argument('--out_root', required=True, help='결과(runs/)와 특징 캐시(features/)를 저장할 곳')
+    ap.add_argument('--stage', choices=['train', 'predict'], default='train', help='train = 학습(기본), predict = 저장된 최고 모델로 test 예측과 제출용 zip 만들기')
     ap.add_argument('--zip_dir', default=None, help='train/val zip 이 있는 곳(main20: train.zip, val.zip / ctrl5: internal_ctrl5_train.zip ...). 주면 data_root 에 풀어 준다')
     ap.add_argument('--local_tmp', default=None, help='에폭마다 쓰는 val 예측 csv 위치(로컬 디스크). 기본은 시스템 임시 폴더')
     ap.add_argument('--exp', default='', help='실행 이름 꼬리표')

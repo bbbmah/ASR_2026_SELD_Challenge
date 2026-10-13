@@ -1,5 +1,6 @@
 # [변경 이력 시작]
 #   2026-10-13  최초 생성: baseline/ntu_challenge/colab_ntu.ipynb를 만드는 스크립트
+#   2026-10-13  test 예측 셀 추가
 # [변경 이력 끝]
 """baseline/ntu_challenge/colab_ntu.ipynb (NTU 시스템 학습 노트북)를 만든다. python build/make_ntu_notebook.py"""
 import json, os
@@ -14,7 +15,8 @@ DCASE 2025 참가팀 NTU의 소리만 쓰는 시스템을 챌린지 데이터셋
 위에서부터 **셀을 순서대로** 실행하고 2번 셀의 **설정 칸**만 바꾸면 됩니다. 런타임은 **GPU**(런타임 → 런타임 유형 변경)로 설정해 주세요.
 
 - 하는 일: zip 풀기 → 특징 뽑기(드라이브에 캐시) → 학습 → 매 에폭 val 채점으로 최고 모델 저장.
-- 하지 않는 일: test 예측과 제출 파일 만들기, 이어 하기. **학습 중 세션이 끊기면 학습을 처음부터 다시 해야 합니다**(특징 캐시는 드라이브에 남아 있어서 다시 뽑지 않습니다).
+- test 예측과 제출용 zip 만들기는 **5번 셀**(`--stage predict`)에서 합니다. 채점은 하지 않습니다(test 정답은 비공개).
+- 하지 않는 일: 이어 하기. **학습 중 세션이 끊기면 학습을 처음부터 다시 해야 합니다**(특징 캐시는 드라이브에 남아 있어서 다시 뽑지 않습니다).
 - 소리만 쓰므로 영상은 쓰지 않습니다. 결과는 `seld_runs/runs/ntu_{dataset}_s{seed}/` 에 저장되어 기존 `seld_challenge` 실행과 이름이 겹치지 않습니다.
 """))
 C.append(md("""
@@ -98,6 +100,13 @@ for k in ("ext", "basic"):
 print("모델:", f"{RUN}/best_model.pth")
 display(pd.read_csv(f"{RUN}/train_log.csv").dropna(subset=["F_ext"]).tail(10))
 """))
+C.append(md("""
+## 5. test 예측과 제출용 zip
+학습한 최고 모델(`best_model.pth`)로 **test 입력**을 예측합니다. 순서(모두 **미측정**): test zip 풀기(`test_inputs.zip`, main20은 영상까지 들어 있어 약 2GB) → test 오디오 특징 뽑기(드라이브에 캐시, 정규화는 train 통계) → 예측.
+2번 셀의 설정(`dataset`, `seed`, `exp`)이 학습 때와 **같아야** 그 실행의 모델을 찾습니다. 특징 옵션(`ms`, `gamma`, `iv`)은 학습 때 값을 모델 파일에서 가져옵니다.
+결과: `runs/ntu_.../pred_test/*.csv` 와 제출용 `submission_ntu_....zip`(예측 csv만 들어 있음). 채점은 주최자가 따로 합니다.
+"""))
+C.append(code("!python main.py --stage predict {ARGS}"))
 from add_history import history_md                # 변경 이력 주석을 첫 셀 맨 위에 넣는다(이력 데이터는 add_history.py)
 C[0]["source"] = (history_md("baseline/ntu_challenge/colab_ntu.ipynb") + "\n\n" + "".join(C[0]["source"])).splitlines(True)
 nb = {"cells": C, "metadata": {"colab": {"provenance": [], "gpuType": "T4"}, "kernelspec": {"name": "python3", "display_name": "Python 3"}, "accelerator": "GPU", "language_info": {"name": "python"}}, "nbformat": 4, "nbformat_minor": 5}
